@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MvcMovie.Models;
-
+//Test Comment for commits
 namespace MvcMovie.Controllers
 {
     public class MoviesController : Controller
