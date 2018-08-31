@@ -1,5 +1,4 @@
-﻿@model IEnumerable<MvcMovie.Models.Movie>
-
+﻿@model  MvcMovie.Models.MovieGenreViewModel
 @{
     ViewData["Title"] = "Index";
 }
@@ -9,26 +8,42 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<form aps-controller="Movies" asp-action="Index" method="get">
+    <p>
+        <!--장르검색-->
+        <select asp-for="movieGenre" asp-items="Model.genres">
+            <option value="">ALL</option>
+        </select>
+
+        <!--제목검색-->
+        Title:  <input type="text" name="SearchString" />
+                <input type="submit" value="Filter" />
+    </p>
+</form>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @Html.DisplayNameFor(model => model.movies[0].Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ReleaseDate)
+                @Html.DisplayNameFor(model => model.movies[0].ReleaseDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Genre)
+                @Html.DisplayNameFor(model => model.movies[0].Genre)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                @Html.DisplayNameFor(model => model.movies[0].Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.movies[0].Rating)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.movies) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
@@ -43,6 +58,14 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
+                @Html.DisplayFor(modelItem=>item.Rating)
+            </td>
+            <td>
+                <!--Core MVC 앵커 태그 도우미에 의해 생성
+                     : 태그 도우미를 사용하면 서버쪽 코드를 Razor 파일에서 HTML요소를 만들고
+                    렌더링하는데 사용 할 수 있다.
+                    AnchorTagHelper가 컨트롤러 작업 메서드와 경로 ID로 부터 HTML Href 특성값을
+                    동적으로 생성.-->
                 <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>

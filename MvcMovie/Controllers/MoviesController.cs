@@ -18,10 +18,44 @@ namespace MvcMovie.Controllers
             _context = context;
         }
 
-        // GET: Movies
-        public async Task<IActionResult> Index()
+        [HttpPost]
+        public string Index(string searchString, bool notUsed)
         {
-            return View(await _context.Movie.ToListAsync());
+            return "From [HttpPost]Index: filter on " + searchString;
+        }
+
+        // GET: Movies
+        public async Task<IActionResult> Index(string movieGenre, string searchString)
+        {
+            // Use LINQ to get List of Genres. - 데이터베이스에서 모든 장르를 검색하는 LINQ쿼리
+            IQueryable<string> genreQuery = from m in _context.Movie
+                                            orderby m.Genre
+                                            select m.Genre;
+
+            var movies = from m in _context.Movie
+                         select m;  //쿼리는 이 시점에서 정의만 되며, 데이터베이스에 대해 실행되지 않음.
+
+            //영화 타이틀로 검색
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                //마찬가지로 이 시점에서 실행이 되지 않음.
+                movies = movies.Where(s => s.Title.Contains(searchString));
+                //Contains는 C#코드가 아닌 데이터베이스에서 실행
+            }
+
+            //장르로 검색
+            if(!String.IsNullOrEmpty(movieGenre))
+            {
+                movies = movies.Where(x => x.Genre == movieGenre);
+            }
+
+            var movieGenreVM = new MovieGenreViewModel();
+            // 선택 목록에 중복 장르가 없도록 함. ( Distinct() )
+            movieGenreVM.genres = new SelectList(await genreQuery.Distinct().ToListAsync());
+            movieGenreVM.movies = await movies.ToListAsync();
+
+            return View(movieGenreVM);
+            //return View(await _context.Movie.ToListAsync());
         }
 
         // GET: Movies/Details/5                Nullable
@@ -53,7 +87,7 @@ namespace MvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public async Task<IActionResult> Create([Bind("ID,Title,ReleaseDate,Genre,Price, Rating")] Movie movie)
         {
             if (ModelState.IsValid)
             {
@@ -83,10 +117,12 @@ namespace MvcMovie.Controllers
         // POST: Movies/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,ReleaseDate,Genre,Price")] Movie movie)
-        {
+        [HttpPost]      //POST요청에 의해서만 호출
+        [ValidateAntiForgeryToken] // 요청위조 방지를 위해 사용. Edit.cshtml에서 생성된 위조
+                                   //방지 파일과 쌍을 이룹니다.
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,ReleaseDate,Genre,Price, Rating")] Movie movie)
+        {   /*Bind 특성
+                  과도게시 방지 방법. 변경하려는 속성만 Bind 특성에 포함해야 한다.*/
             if (id != movie.ID)
             {
                 return NotFound();
